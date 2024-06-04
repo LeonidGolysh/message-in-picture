@@ -1,5 +1,7 @@
 package org.example;
 
+import org.example.convert.Converter;
+
 import javax.imageio.ImageIO;
 import java.awt.image.BufferedImage;
 import java.io.File;
@@ -22,6 +24,7 @@ public class TextInFromImage {
         outerLoop:
         for (int y = 0; y < image.getHeight(); y++) {
             for (int x = 0; x < image.getWidth(); x++) {
+
                 int pixel = image.getRGB(x, y);
 
                 int[] colors = {
@@ -30,16 +33,18 @@ public class TextInFromImage {
                         pixel & 0xff        //blue
                 };
 
+                // Iterate through each color channel (red, green, blue)
                 for (int i = 0; i < 3; i++) {
                     if (textIndex < binaryText.length()) {
 //                        System.out.printf("Embedding bit %c at pixel (%d, %d) color %s\n", binaryText.charAt(textIndex),x, y, i == 0 ? "red" : i == 1 ? "green" : "blue");
+
+                        //Embed binary data into the least significant bit (LSB) of the current color chanel
                         colors[i] = (colors[i] & ~1) | (binaryText.charAt(textIndex) - '0');
                         textIndex++;
-                    } else {
-                        break outerLoop; //
-                    }
+                    } else break outerLoop;
                 }
 
+                // Combine modified color channels into a new pixel value
                 int newPixel = (colors[0] << 16) | (colors[1] << 8) | colors[2];
                 image.setRGB(x, y, newPixel);
             }

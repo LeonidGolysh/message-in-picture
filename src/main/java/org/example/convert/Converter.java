@@ -1,4 +1,4 @@
-package org.example;
+package org.example.convert;
 
 public class Converter {
 
@@ -19,13 +19,7 @@ public class Converter {
             String byteStr = bits.substring(i, i + 8);
             System.out.println("Byte string: " + byteStr);
 
-            if(byteStr.equals("1111111111111110")) {
-                System.out.println("End marker found");
-                break;
-            }
-//            text.append((char) Integer.parseInt(byteStr, 2));
-            char c = (char) Integer.parseInt(byteStr, 2);
-            text.append(c);
+            text.append((char) Integer.parseInt(byteStr, 2));
         }
 
         return text.toString();
