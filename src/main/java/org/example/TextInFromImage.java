@@ -78,6 +78,7 @@ public class TextInFromImage {
         }
 
         System.out.println("Extracted binary text: " + binaryText);
-        return converter.bitsToText(binaryText.toString());
+        String binaryTextWithoutLength = binaryText.substring(8);
+        return converter.bitsToText(binaryTextWithoutLength);
     }
 }
