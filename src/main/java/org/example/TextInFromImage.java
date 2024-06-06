@@ -77,7 +77,7 @@ public class TextInFromImage {
         return new int[] {
             (pixel >> 16) & 0xff, //red
             (pixel >> 8) & 0xff, //green
-            pixel & 0xff
+            pixel & 0xff        // blue
         };
     }
 

@@ -8,7 +8,7 @@ public class Starter {
 
         String inputImagePath = "src/main/resources/input.png";
         String outputImagePath = "src/main/resources/output.png";
-        String message = "Hello world";
+        String message = "Привіт світ";
 
         try {
             text.embedTextInImage(inputImagePath, message, outputImagePath);
