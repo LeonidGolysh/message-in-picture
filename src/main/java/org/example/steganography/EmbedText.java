@@ -1,4 +1,4 @@
-package org.example;
+package org.example.steganography;
 
 import org.example.convert.Converter;
 
@@ -7,8 +7,9 @@ import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
 
-public class TextInFromImage {
+public class EmbedText {
     private final Converter converter = new Converter();
+    private final ImageUtils imageUtils = new ImageUtils();
 
     public void embedTextInImage(String imagePath, String text, String outputPath) throws IOException {
         BufferedImage image = ImageIO.read(new File(imagePath));
@@ -21,17 +22,6 @@ public class TextInFromImage {
         ImageIO.write(image, "png", new File(outputPath));
         System.out.println("Text embedded in " + outputPath);
         System.out.println("Binary text: " + binaryText);
-    }
-
-    public String extractTextFromImage(String imagePath) throws IOException {
-        BufferedImage image = ImageIO.read(new File(imagePath));
-        StringBuilder binaryText = new StringBuilder();
-
-        extractBinaryTextFromImage(image, binaryText);
-
-        System.out.println("Extracted binary text: " + binaryText);
-        String binaryTextWithoutLength = binaryText.substring(8);
-        return converter.bitsToText(binaryTextWithoutLength);
     }
 
     private String prepareBinaryText(String text) {
@@ -51,16 +41,20 @@ public class TextInFromImage {
         for (int y = 0; y < image.getHeight() && !isTextEmbedded; y++) {
             for (int x = 0; x < image.getWidth() && !isTextEmbedded; x++) {
                 int pixel = image.getRGB(x, y);
-                int[] colors = extractColors(pixel);
+                int[] colors = imageUtils.extractColors(pixel);
 
                 // Iterate through each color channel (red, green, blue)
                 for (int i = 0; i < 3; i++) {
                     if (textIndex < binaryText.length()) {
-//                        System.out.printf("Embedding bit %c at pixel (%d, %d) color %s\n", binaryText.charAt(textIndex),x, y, i == 0 ? "red" : i == 1 ? "green" : "blue");
+                        int originalColor = colors[i];  //Used for checking
+                        int bitToEmbed = binaryText.charAt(textIndex) - '0';
 
                         //Embed binary data into the least significant bit (LSB) of the current color chanel
-                        colors[i] = (colors[i] & ~1) | (binaryText.charAt(textIndex) - '0');
+                        colors[i] = (colors[i] & ~1) | bitToEmbed;
                         textIndex++;
+//                        System.out.printf("Embedding bit %d at pixel (%d, %d) color %s: %02X -> %02X\n",
+//                                bitToEmbed, x, y, (i == 0 ? "red" : i == 1 ? "green" : "blue"),
+//                                originalColor, colors[i]);
                     } else {
                         isTextEmbedded = true;
                         break;
@@ -69,37 +63,6 @@ public class TextInFromImage {
                 // Combine modified color channels into a new pixel value
                 int newPixel = (colors[0] << 16) | (colors[1] << 8) | colors[2];
                 image.setRGB(x, y, newPixel);
-            }
-        }
-    }
-
-    private int[] extractColors(int pixel) {
-        return new int[] {
-            (pixel >> 16) & 0xff, //red
-            (pixel >> 8) & 0xff, //green
-            pixel & 0xff        // blue
-        };
-    }
-
-    private void extractBinaryTextFromImage(BufferedImage image, StringBuilder binaryText) {
-        boolean endPointFound = false;
-
-        for (int y = 0; y < image.getHeight() && !endPointFound; y++) {
-            for (int x = 0; x < image.getWidth() && !endPointFound; x++) {
-                int pixel = image.getRGB(x, y);
-
-                int[] colors = extractColors(pixel);
-
-                for (int i = 0; i < 3; i++) {
-                    binaryText.append(colors[i] & 1);
-
-                    if (binaryText.length() >= 16 && binaryText.substring(binaryText.length() - 16).equals("1111111111111110")) {
-                        // Delete end point
-                        binaryText.setLength(binaryText.length() - 16);
-                        endPointFound = true;
-                        break;
-                    }
-                }
             }
         }
     }
